@@ -9,6 +9,7 @@ import '../bloc/hoje_state.dart';
 import '../widgets/activity_card.dart';
 import '../widgets/check_in_card.dart';
 import '../widgets/low_energy_dialog.dart'; 
+import '../widgets/suggestion_card.dart';
 
 class HojePage extends StatefulWidget {
   const HojePage({super.key});
@@ -143,6 +144,36 @@ class _HojePageState extends State<HojePage> {
                       child: _buildListContent(state, atividades),
                     ),
                     const SizedBox(height: 24),
+
+
+                    if (!isLowEnergy) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Sugerido para você', style: AppTextStyles.bodyBold.copyWith(color: AppColors.black)),
+                          Text('Ver todas', style: AppTextStyles.bodyBold.copyWith(color: AppColors.cloudBlue)),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SuggestionCard(
+                            title: 'Dica de nutrição',
+                            subtitle: 'Alimentos que ajudam...',
+                            icon: Icons.egg_alt_outlined, // Ícone provisório simulando o ovo
+                            iconColor: AppColors.nutritionBrown,
+                          ),
+                          const SuggestionCard(
+                            title: 'Técnica de meditação',
+                            subtitle: '', // Sem subtítulo no Figma para este card
+                            icon: Icons.cloud, // Ícone provisório simulando a nuvem
+                            iconColor: AppColors.cloudBlue,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                   ],
                 );
               },
