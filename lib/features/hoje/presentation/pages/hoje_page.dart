@@ -143,7 +143,6 @@ class _HojePageState extends State<HojePage> {
                     Expanded(
                       child: _buildListContent(state, atividades),
                     ),
-                    const SizedBox(height: 24),
 
 
                     if (!isLowEnergy) ...[
@@ -172,7 +171,6 @@ class _HojePageState extends State<HojePage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
                     ],
                   ],
                 );
