@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'package:health_routine/features/hoje/presentation/pages/hoje_page.dart';
+import 'package:health_routine/features/tasks/presentation/widgets/nova_tarefa_modal.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -33,7 +34,19 @@ class _MainPageState extends State<MainPage> {
       // O Botão Flutuante (O "+" preto e amarelo)
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Aqui depois vamos abrir aquele Modal lindão de "Nova Tarefa"
+          // Faz o modal subir de baixo para cima!
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true, // Permite que o modal ocupe mais espaço se o teclado abrir
+            backgroundColor: Colors.transparent, // Deixa a cor de fundo por conta do Container do Modal
+            builder: (context) {
+              return Padding(
+                // Esse padding empurra o modal para cima quando o teclado aparece
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: const NovaTarefaModal(),
+              );
+            },
+          );
         },
         backgroundColor: AppColors.black,
         shape: const CircleBorder(), // Força ele a ser redondinho
