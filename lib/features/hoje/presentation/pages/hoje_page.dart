@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_background.dart';
+import '../../domain/entities/activity_entity.dart';
 import '../bloc/hoje_cubit.dart';
 import '../bloc/hoje_state.dart';
 import '../widgets/activity_card.dart';
+import '../widgets/check_in_card.dart';
+import '../widgets/low_energy_dialog.dart'; 
 
 class HojePage extends StatefulWidget {
   const HojePage({super.key});
@@ -29,96 +32,156 @@ class _HojePageState extends State<HojePage> {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 24),
+            // O BlocBuilder agora envolve a coluna inteira para atualizar a tela toda
+            child: BlocBuilder<HojeCubit, HojeState>(
+              builder: (context, state) {
+                // Variáveis auxiliares para facilitar o layout
+                bool isLowEnergy = false;
+                List<ActivityEntity> atividades = [];
 
-                // Cabeçalho
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                if (state is HojeSuccess) {
+                  isLowEnergy = state.isLowEnergyMode;
+                  atividades = state.activities;
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Olá, Mariana ! 🌟', style: AppTextStyles.heading1),
-                    const CircleAvatar(
-                      backgroundColor: AppColors.softYellow,
-                      radius: 20,
-                      child: Icon(
-                        Icons.person,
-                        color: AppColors.black,
-                      ), // Avatar provisório
+                    const SizedBox(height: 24),
+
+                    // Cabeçalho
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Olá, Mariana ! 🌟', style: AppTextStyles.heading1),
+                        const CircleAvatar(
+                          backgroundColor: AppColors.softYellow,
+                          radius: 20,
+                          child: Icon(
+                            Icons.person,
+                            color: AppColors.black,
+                          ), // Avatar provisório
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 32),
+                    const SizedBox(height: 24),
 
-                // Seção "Atividades de Hoje" e Botão "Baixa Energia"
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Atividades de Hoje', style: AppTextStyles.heading2),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.black,
-                        foregroundColor: AppColors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                    // O Card de Check-in (Só aparece se NÃO estiver em baixa energia)
+                    if (!isLowEnergy) ...[
+                      const CheckInCard(),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // Banner de Baixa Energia Ativado (Aparece se estiver ativo)
+                    if (isLowEnergy) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.moodInsegura, // Laranja do Figma
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Modo Baixa Energia Ativado',
+                              style: AppTextStyles.heading2,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Suas metas complexas foram ocultadas para focar apenas no mínimo viável de saúde',
+                              style: AppTextStyles.bodySmall.copyWith(color: AppColors.black),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ),
-                      onPressed: () {
-                        // Exemplo chamando o toggle do modo baixa energia
-                        context.read<HojeCubit>().toggleLowEnergyMode(true);
-                      },
-                      child: const Text(
-                        'Baixa energia',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                      const SizedBox(height: 24),
+                    ],
 
-                // Lista de Atividades gerenciada pelo BlocBuilder!
-                Expanded(
-                  child: BlocBuilder<HojeCubit, HojeState>(
-                    builder: (context, state) {
-                      if (state is HojeLoading || state is HojeInitial) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (state is HojeError) {
-                        return Center(
-                          child: Text(
-                            state.message,
-                            style: AppTextStyles.bodySmall,
+                    // Seção "Atividades de Hoje" e Botão
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Atividades de Hoje', style: AppTextStyles.heading2),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.black,
+                            foregroundColor: AppColors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
-                        );
-                      } else if (state is HojeSuccess) {
-                        return Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: Colors.black26),
-                          ),
-                          child: ListView.builder(
-                            itemCount: state.activities.length,
-                            itemBuilder: (context, index) {
-                              return ActivityCard(
-                                activity: state.activities[index],
+                          onPressed: () async {
+                            if (isLowEnergy) {
+                              // Se já tá ativo, só desativa direto
+                              context.read<HojeCubit>().toggleLowEnergyMode(false);
+                            } else {
+                              // Se não tá ativo, mostra o Modal de confirmação
+                              final confirmar = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => const LowEnergyDialog(),
                               );
-                            },
+                              // Se o usuário clicou em "Ativar", a gente muda o state
+                              if (confirmar == true) {
+                                context.read<HojeCubit>().toggleLowEnergyMode(true);
+                              }
+                            }
+                          },
+                          // O texto do botão muda dinamicamente
+                          child: Text(
+                            isLowEnergy ? 'Desativar' : 'Baixa energia',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                        );
-                      }
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
 
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
+                    // Lista de Atividades
+                    Expanded(
+                      child: _buildListContent(state, atividades),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                );
+              },
             ),
           ),
         ),
       ),
     );
+  }
+
+  // Função separada só para deixar o código do build mais limpo
+  Widget _buildListContent(HojeState state, List<ActivityEntity> atividades) {
+    if (state is HojeLoading || state is HojeInitial) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (state is HojeError) {
+      return Center(
+        child: Text(
+          state.message,
+          style: AppTextStyles.bodySmall,
+        ),
+      );
+    } else if (state is HojeSuccess) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.black26),
+        ),
+        child: ListView.builder(
+          itemCount: atividades.length,
+          itemBuilder: (context, index) {
+            return ActivityCard(
+              activity: atividades[index],
+            );
+          },
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 }
