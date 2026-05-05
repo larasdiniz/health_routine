@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_background.dart';
@@ -8,7 +9,7 @@ import '../bloc/hoje_cubit.dart';
 import '../bloc/hoje_state.dart';
 import '../widgets/activity_card.dart';
 import '../widgets/check_in_card.dart';
-import '../widgets/low_energy_dialog.dart'; 
+import '../widgets/low_energy_dialog.dart';
 import '../widgets/suggestion_card.dart';
 
 class HojePage extends StatefulWidget {

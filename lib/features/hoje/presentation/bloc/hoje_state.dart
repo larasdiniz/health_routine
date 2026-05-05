@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+
 import '../../domain/entities/activity_entity.dart';
 
 abstract class HojeState extends Equatable {

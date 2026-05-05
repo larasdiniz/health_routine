@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/theme/app_colors.dart';
-import 'package:health_routine/features/hoje/presentation/pages/hoje_page.dart';
-import 'package:health_routine/features/tasks/presentation/widgets/nova_tarefa_modal.dart';
+import '../../../hoje/presentation/pages/hoje_page.dart';
+import '../../../tasks/presentation/widgets/nova_tarefa_modal.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
